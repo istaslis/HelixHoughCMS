@@ -1,0 +1,11 @@
+<use   name="FWCore/Framework"/>
+<use   name="FWCore/ParameterSet"/>
+<use   name="RecoPixelVertexing/PixelTriplets"/>
+<use   name="RecoTracker/TkSeedingLayers"/>
+<use   name="RecoTracker/TkTrackingRegions"/>
+<use   name="MLoVetere/HTTrackSeeding"/>
+
+<library   file="*.cc" name="MLoVetereHTTrackSeedingPlugins">
+  <flags   EDM_PLUGIN="1"/>
+</library>
+

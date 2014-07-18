@@ -1,0 +1,4 @@
+This package will be used to collect code to implement track seeding making use of Hough trasforms.
+
+In order to get DEBUG level printout compile the code using the command:
+   scram b USER_CXXFLAGS="-DEDM_ML_DEBUG"
