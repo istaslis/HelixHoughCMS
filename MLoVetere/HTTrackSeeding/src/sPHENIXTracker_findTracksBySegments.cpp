@@ -1148,7 +1148,7 @@ void sPHENIXTracker::findSeededTracksbySegments(vector<SimpleTrack3D>& seeds, ve
 
 
 
-  float cosang_cut = 0.999;
+  float cosang_cut = 0.99;
   float cosang_diff = 1. - cosang_cut;
   float cosang_diff_inv = 1./cosang_diff;
   float sinang_cut = sqrt(1. - cosang_cut*cosang_cut);

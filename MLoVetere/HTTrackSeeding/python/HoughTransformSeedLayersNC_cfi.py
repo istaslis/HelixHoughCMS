@@ -169,7 +169,7 @@ houghTransformSeedLayersPixelAndOuterMatched = houghTransformSeedLayersPixelAndM
     ComponentName = cms.string('houghTransformSeedLayersPixelAndOuterMatched'),
     layerList = cms.vstring(
         'BPix1+BPix2+BPix3'
-#        '+TOB1+TOB2'
+        '+TOB1+TOB2'
 #        '+TIB1+TIB2'
 #        '+TID1_pos+TID2_pos+TID3_pos+TID1_neg+TID2_neg+TID3_neg'
         '+TEC8_pos+TEC9_pos'

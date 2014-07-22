@@ -602,8 +602,8 @@ void sPHENIXTracker::findSeededTracks(vector<SimpleTrack3D>& seeds, vector<Simpl
 
 
 
-  findSeededTracksByProjection(seeds, hits, tracks, range);
-  //findSeededTracksbySegments(seeds, hits, tracks, range);
+  //findSeededTracksByProjection(seeds, hits, tracks, range);
+    findSeededTracksbySegments(seeds, hits, tracks, range);
 
 
 
