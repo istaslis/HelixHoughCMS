@@ -107,7 +107,6 @@ void  HTTripletGenerator::init( const edm::EventSetup & es, const TrackingRegion
     LogTrace("HTTrackSeeding") << "SeedingLayerSet number " << ++i;
     for ( ctfseeding::SeedingLayers::const_iterator aLayer = aSet->begin(); aLayer != aSet->end(); aLayer++ ) {
       LogTrace("HTTrackSeeding") << "  " << aLayer->name();
-    std::cout <<" Layer name "<<aLayer->name()<<std::endl;
     }
   }
   theRefPoint      = reg.origin();
@@ -327,15 +326,12 @@ void  HTTripletGenerator::hitTriplets ( const TrackingRegion & reg, OrderedHitTr
     std::vector<PHENIXHough::SimpleTrack3D> seedTracks;
     
     float xVtx = 0, xVtxErr = 0, yVtx = 0, yVtxErr =0, zVtx = 0, zVtxErr = 0;
-	int nVtx = 0;
 
 
 	edm::Handle<std::vector<reco::Vertex> > vertices;
 	const std::vector<reco::Vertex> * recoVertices;
  	ev.getByLabel(vertexSrc,vertices);
 	recoVertices = vertices.product();
-
-    nVtx = recoVertices->size();;
 
     //going through the vertices and taking the last one
     for (unsigned int i = 0 ; i< recoVertices->size(); ++i){
