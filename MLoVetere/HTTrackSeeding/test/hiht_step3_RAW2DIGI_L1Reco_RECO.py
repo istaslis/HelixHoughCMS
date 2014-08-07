@@ -3,7 +3,7 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 
 from hi_step3_RAW2DIGI_L1Reco_RECO import *
 
-process.load('MLoVetere.HTTrackSeeding.HoughTransformAloneStep_cfi')
+process.load('MLoVetere.HTTrackSeeding.HoughTransformSeedFilterStep_cfi')
 
 outputfilename = 'Pythia_BJet_Mix_Pt80_TuneZ2_2760GeV_cfi_py_GEN_SIM_DIGI_L1_DIGI2RAW_HLT_RAW2DIGI_L1Reco_HIHTRECO.root'
 

@@ -223,7 +223,7 @@ bool comparehits(PHENIXHough::SimpleHit3D h, PHENIXHough::SimpleHit3D g)
 
 void GetSeedHits( const edm::Event & ev, const edm::EventSetup & iSetup, std::string seedSrc, std::vector<PHENIXHough::SimpleTrack3D> &seedTracks, std::vector<TransientTrackingRecHitBuilder::RecHitPointer> &seedhits)
 {
-    std::string tripletSrc=seedSrc;//"hiPixel3PrimTracks";
+    std::string tripletSrc=seedSrc;
 
     edm::Handle<TrajectorySeedCollection> triplets;
     ev.getByLabel(tripletSrc,triplets);
@@ -262,9 +262,6 @@ void GetSeedHits( const edm::Event & ev, const edm::EventSetup & iSetup, std::st
 
             index++;
 
-
-
-            //std::cout << "   hit "<<(unsigned)detID<<" x="<<globalPos.x()<<" y="<<globalPos.y()<<" z="<<globalPos.z()<<std::endl;
         }
 
 
@@ -281,7 +278,7 @@ void GetSeedHits( const edm::Event & ev, const edm::EventSetup & iSetup, std::st
 
 void GetSeedHitsFromTracks( const edm::Event & ev, const edm::EventSetup & iSetup, std::string seedSrc, std::vector<PHENIXHough::SimpleTrack3D> &seedTracks, std::vector<TransientTrackingRecHitBuilder::RecHitPointer> &seedhits)
 {
-    std::string trkSrc=seedSrc;//"hiPixel3PrimTracks";
+    std::string trkSrc=seedSrc;
 
     edm::Handle<std::vector<reco::Track> > tracks;
     ev.getByLabel(trkSrc,tracks);
@@ -295,9 +292,6 @@ void GetSeedHitsFromTracks( const edm::Event & ev, const edm::EventSetup & iSetu
         edm::ESHandle<TransientTrackingRecHitBuilder> recHitBuilder;
         iSetup.get<TransientRecHitRecord>().get("WithAngleAndTemplate",recHitBuilder);
 
-        //int hitnumber = etrk.numberOfValidHits();
-
-        //std::cout << "Track "<<it<<" hits "<<hitnumber<<std::endl;
         for (trackingRecHit_iterator ith = etrk.recHitsBegin(); ith != etrk.recHitsEnd(); ++ith) {
             const TrackingRecHit * hit = ith->get();
             DetId detID = hit->geographicalId()();
@@ -309,16 +303,10 @@ void GetSeedHitsFromTracks( const edm::Event & ev, const edm::EventSetup & iSetu
             GlobalPoint globalPos = rechit->globalPosition();
             GlobalError globalErr = rechit->globalPositionError();
 
-            PHENIXHough::SimpleHit3D houghhit = MakeHit(globalPos, globalErr, index, ith-etrk.recHitsBegin()); // so far layer is the index in triplet...
+            PHENIXHough::SimpleHit3D houghhit = MakeHit(globalPos, globalErr, index, ith-etrk.recHitsBegin()); // here layer is the index in triplet - enough for now
             seed.hits.push_back(houghhit);
-
             seedhits.push_back(rechit);
-
             index++;
-
-
-
-           // std::cout << "   hit "<<(unsigned)detID<<" x="<<globalPos.x()<<" y="<<globalPos.y()<<" z="<<globalPos.z()<<std::endl;
         }
 
 
@@ -337,12 +325,8 @@ void  HTTripletGenerator::hitTriplets ( const TrackingRegion & reg, OrderedHitTr
 {
   
     std::vector<PHENIXHough::SimpleTrack3D> seedTracks;
-
-    //tell me something about the vertex
-  //need to add corresponding headers and get vertex, but... it's bad...
-  
     
-     float xVtx = 0, xVtxErr = 0, yVtx = 0, yVtxErr =0, zVtx = 0, zVtxErr = 0;
+    float xVtx = 0, xVtxErr = 0, yVtx = 0, yVtxErr =0, zVtx = 0, zVtxErr = 0;
 	int nVtx = 0;
 
 
@@ -351,35 +335,16 @@ void  HTTripletGenerator::hitTriplets ( const TrackingRegion & reg, OrderedHitTr
  	ev.getByLabel(vertexSrc,vertices);
 	recoVertices = vertices.product();
 
+    nVtx = recoVertices->size();;
 
-/*     std::string vtxsrcname = "hiSelectedVertex";
-//   
-      const reco::VertexCollection * recoVertices;
-     edm::Handle<reco::VertexCollection> vertexCollection;
-     ev.getByLabel(vtxsrcname,vertexCollection);
-     recoVertices = vertexCollection.product();
-//     unsigned int daughter = 0;
-     int nVertex = 0;
-//     unsigned int greatestvtx = 0;
- */
-     nVtx = recoVertices->size();;
-
-     std::cout << "Vertices: "<<nVtx<<" at "<<std::endl;
-
-  for (unsigned int i = 0 ; i< recoVertices->size(); ++i){
-//       daughter = (*recoVertices)[i].tracksSize();
-//       if( daughter > (*recoVertices)[greatestvtx].tracksSize()) greatestvtx = i;
-
+    //going through the vertices and taking the last one
+    for (unsigned int i = 0 ; i< recoVertices->size(); ++i){
          xVtx =(*recoVertices)[i].position().x();
          yVtx =(*recoVertices)[i].position().y();
          zVtx =(*recoVertices)[i].position().z();
          xVtxErr = (*recoVertices)[i].xError();
          yVtxErr = (*recoVertices)[i].yError();
          zVtxErr = (*recoVertices)[i].zError();
-
-	std::cout << "x: "<<xVtx<<" dx: "<<xVtxErr<<std::endl;
-    	std::cout << "y: "<<yVtx<<" dy: "<<yVtxErr<<std::endl;
-    	std::cout << "z: "<<zVtx<<" dz: "<<zVtxErr<<std::endl;
      }
 
 
@@ -400,55 +365,12 @@ void  HTTripletGenerator::hitTriplets ( const TrackingRegion & reg, OrderedHitTr
       k++;
     }
     if ( hits.size()<3 ) continue;
-    /*  std::cout << "Seeding from region "   << reg.name()
-                  << " and layer set number " << i  
-                  << " with " << hits.size()  << " hits in the set" << std::endl;
-        int nhit = 0;
-        for ( TrackingRegion::Hits::const_iterator hit = hits.begin(); hit != hits.end(); hit++ ) {
-          std::cout << "    hit # " << nhit;
-          DetId hitId = (*hit)->geographicalId();
-          if ( hitId.det() == DetId::Tracker ) {
-            if      ( hitId.subdetId() == StripSubdetector::TIB )  
-               std::cout << " - TIB " << TIBDetId(hitId).layer();
-            else if ( hitId.subdetId() == StripSubdetector::TOB ) 
-               std::cout << " - TOB " << TOBDetId(hitId).layer();
-            else if ( hitId.subdetId() == StripSubdetector::TID ) 
-               std::cout << " - TID " << TIDDetId(hitId).wheel();
-            else if ( hitId.subdetId() == StripSubdetector::TEC ) 
-               std::cout << " - TEC " << TECDetId(hitId).wheel();
-            else if ( hitId.subdetId() == PixelSubdetector::PixelBarrel ) 
-               std::cout << " - PixBar " << PXBDetId(hitId).layer();
-            else if ( hitId.subdetId() == PixelSubdetector::PixelEndcap )
-               std::cout << " - PixFwd " << PXFDetId(hitId).disk();
-            else 
-               std::cout << " UNKNOWN TRACKER HIT TYPE ";
-          }
-          if ( (*hit)->isValid() )
-            std::cout << " - globalPos =" << (*hit)->globalPosition() 
-                      << " +/- (" << sqrt((*hit)->globalPositionError().cxx())
-                      << ","      << sqrt((*hit)->globalPositionError().cyy())
-                      << ","      << sqrt((*hit)->globalPositionError().czz()) 
-                      << ")"      << std::endl;
-          else
-            std::cout << " - invalid hit" << std::endl;
-          nhit++;
-        } */
-
+      
     std::vector<TransientTrackingRecHitBuilder::RecHitPointer> seedhits;
     if (seedfromHits)
         GetSeedHits(ev,es, seedSrc, seedTracks, seedhits);
     else
         GetSeedHitsFromTracks(ev,es, seedSrc, seedTracks, seedhits);
-
-    //check if hits are ok
-//    std::cout <<"Copied hits :"<<seedhits.size()<<std::endl;
-//    for (unsigned i=0;i<seedhits.size();i++){
-//    GlobalPoint globalPos = seedhits[i]->globalPosition();
-//    std::cout << "   hit "<<" x="<<globalPos.x()<<" y="<<globalPos.y()<<" z="<<globalPos.z()<<std::endl;
-//    }
-
-
-
 
 
     HelixHough finder( theRefPoint, theRange, theNumBins, theMinRes, theMaxRes, theRequiredLayers );

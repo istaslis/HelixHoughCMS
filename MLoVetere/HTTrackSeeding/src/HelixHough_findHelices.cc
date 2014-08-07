@@ -653,7 +653,7 @@ void HelixHough::findSeededHelices(unsigned int min_hits, unsigned int max_hits,
     high+=delta;
   }
   
-  cout << "seeds_vec["<<zoomlevel<<"] "<<seeds_vec[zoomlevel]->size()<<endl;
+  if (debug) cout << "seeds_vec["<<zoomlevel<<"] "<<seeds_vec[zoomlevel]->size()<<endl;
   // voting for the seeds
   for(unsigned int i=0;i<seeds_vec[zoomlevel]->size();++i)
   {
@@ -698,7 +698,7 @@ void HelixHough::findSeededHelices(unsigned int min_hits, unsigned int max_hits,
   //for(unsigned int i=0;i<bins_vec[zoomlevel]->size();i++)
   //if ((*(bins_vec[zoomlevel]))[i].is_seed) seedshere++;
   //cout <<"seedshere 1 = "<<seedshere;
-  cout << "bins_vec["<<zoomlevel<<"] "<<bins_vec[zoomlevel]->size()<<endl;
+  if (debug) cout << "bins_vec["<<zoomlevel<<"] "<<bins_vec[zoomlevel]->size()<<endl;
   gettimeofday(&t3, NULL);
   sort(bins_vec[zoomlevel]->begin(), bins_vec[zoomlevel]->end());
   gettimeofday(&t4, NULL);

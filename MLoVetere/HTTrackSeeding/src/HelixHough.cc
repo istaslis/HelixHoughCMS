@@ -89,9 +89,6 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
 
     bool OuterFiltering = true;
     bool houghseeding = false;
-
-std::cout << "VERTEX!!! "<<xVtx<<" "<<yVtx<<" "<<zVtx<<" "<<zVtxErr<<" !"<<std::endl;
-
   
   //float ro1, ro2, phi1, phi2, z1, z2;
   
@@ -165,7 +162,6 @@ std::cout << "VERTEX!!! "<<xVtx<<" "<<yVtx<<" "<<zVtx<<" "<<zVtxErr<<" !"<<std::
   
   	int nlayers = 25;
 	std::vector<float> radii { 4.1, 7.5, 9.92,/* 25.0, 34.0, 43.0, 52.0, */61.0, 69.6, 78.2, 86.8, 96.5, 108.0, 120,130,140,150,160,170,180,190,200,210,220,230 };
-	//WHERE ARE THEY USED??? {4.14566, 7.52415, 9.92104, 9.92252}
 
 	std::vector<float> material;
     material.assign(nlayers, 0.01);

@@ -1104,8 +1104,10 @@ vector<SimpleHit3D> GetLast3NonDummy(SimpleTrack3D &track, uint startfrom)
 
 void sPHENIXTracker::findSeededTracksbySegments(vector<SimpleTrack3D>& seeds, vector<SimpleHit3D>& hits, vector<SimpleTrack3D>& tracks, const HelixRange& range)
 {
+    bool debug = false;
+
   if(seeds.size() == 0){return;}
-  cout << " SEGMENTS "<<hits.size()<<" n_l "<<n_layers<<endl;
+  if (debug) cout << " SEGMENTS "<<hits.size()<<" n_l "<<n_layers<<endl;
   if (PrintStuff) {
     cout << "-------findSeededTracksbySegments---------"<<endl;
     cout << "Range: Phi_min "<<range.min_phi<<endl;
@@ -1127,8 +1129,9 @@ void sPHENIXTracker::findSeededTracksbySegments(vector<SimpleTrack3D>& seeds, ve
   //    cout << "            layer_sorted["<<l<<"].size(): "<<layer_sorted[l].size()<<endl;
   //  }
 
-  for (unsigned int i=0;i<n_layers;i++)
-    cout << " new layer_sorted["<<i<<"].size() = "<<layer_sorted[i].size()<<endl;
+    if (debug)
+        for (unsigned int i=0;i<n_layers;i++)
+            cout << " new layer_sorted["<<i<<"].size() = "<<layer_sorted[i].size()<<endl;
 
 
 
@@ -1388,7 +1391,6 @@ SimpleHit3D neededhit = IsDummy(layer_sorted[l-1][(*cur_seg)[j].hits[l-1]]) ? la
   time2 = ((double)(t2.tv_sec) + (double)(t2.tv_usec)/1000000.);
   CAtime += (time2 - time1);
 
-  cout << "REALLY??? "<<cur_seg->size()<<endl;
   candidates.push_back(cur_seg->size());
 
   dzdl.push_back((range.max_dzdl + range.min_dzdl)/2);

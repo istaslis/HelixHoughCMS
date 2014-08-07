@@ -541,7 +541,7 @@ void sPHENIXTracker::findSeededTracks(vector<SimpleTrack3D>& seeds, vector<Simpl
   double time4=0.;
 
   bool sortlayers = true;
-  bool debug = true;
+  bool debug = false;
   int oldn_layers = n_layers;
   if (sortlayers)
     {
