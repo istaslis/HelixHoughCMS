@@ -25,7 +25,7 @@ HT=False
 
 print ("HI" if hiReco else "pp") + " analysis"
 
-outputfilename = 'Pythia_BJet_Mix_Pt80_TuneZ2_2760GeV_cfi_py_GEN_SIM_DIGI_L1_DIGI2RAW_HLT_RAW2DIGI_L1Reco_HIHTRECO_ANA.root'
+outputfilename = 'BJet_STRECO_ANA.root'
 
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 
@@ -42,11 +42,11 @@ process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load('Configuration.StandardSequences.RawToDigi_cff')
 process.load('Configuration.StandardSequences.L1Reco_cff')
 process.load('Configuration.StandardSequences.ReconstructionHeavyIons_cff')
-process.load('MLoVetere.HTTrackSeeding.HoughTransformAloneStep_cfi')
+#process.load('MLoVetere.HTTrackSeeding.HoughTransformAloneStep_cfi')
 
 process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring(
-        'file:Pythia_BJet_Mix_Pt80_TuneZ2_2760GeV_cfi_py_GEN_SIM_DIGI_L1_DIGI2RAW_HLT_RAW2DIGI_L1Reco_HIHTRECO.root' if hiReco else  'file:pp_step3_RAW2DIGI_L1Reco_RECO.root'
+        'file:BJet_STRECO.root' if hiReco else  'file:pp_step3_RAW2DIGI_L1Reco_RECO.root'
         ),
                             skipEvents = cms.untracked.uint32(0),
 
@@ -72,7 +72,7 @@ process.GlobalTag.globaltag = 'STARTHI53_LV1::All' # if hiReco else 'START53_V27
  
 from RecoLocalTracker.Configuration.RecoLocalTracker_cff import *
 from RecoTracker.IterativeTracking.iterativeTk_cff import *
-from MLoVetere.HTTrackSeeding.HoughTransformAloneStep_cfi import *
+#from MLoVetere.HTTrackSeeding.HoughTransformAloneStep_cfi import *
 
 #process.load("FWCore.MessageLogger.MessageLogger_cfi")
 #process.MessageLogger = cms.Service("MessageLogger", 
