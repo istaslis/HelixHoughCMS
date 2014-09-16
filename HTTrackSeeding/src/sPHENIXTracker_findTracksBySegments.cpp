@@ -523,7 +523,7 @@ void sPHENIXTracker::findTracksBySegments(vector<SimpleHit3D>& hits, vector<Simp
   float cosang_diff = 1. - cosang_cut;
   float cosang_diff_inv = 1./cosang_diff;
   float sinang_cut = sqrt(1. - cosang_cut*cosang_cut);
-  float easy_chi2_cut = 10000;//10.0;
+  float easy_chi2_cut = 1000000;//10.0;
   
   float inv_layer[20];
   for(unsigned int l=3;l<n_layers;++l)
@@ -962,11 +962,12 @@ void sPHENIXTracker::findTracksBySegments(vector<SimpleHit3D>& hits, vector<Simp
     if(it != combos.end()){continue;}
     combos.insert(temp_comb);
     
-    if (PrintStuff) cout << "temp_track to be fitted:";
+    if (PrintStuff) cout << "temp_track to be fitted:"<<endl;
     for(unsigned int l=0;l<n_layers;++l)
     {
       temp_track.hits[l] = layer_sorted[l][(*cur_seg)[i].hits[l]];
-      if (PrintStuff) cout << temp_track.hits[l].dx<<" ";
+      if (PrintStuff) cout << temp_track.hits[l].dx<<" "<<temp_track.hits[l].dy<<" "<<temp_track.hits[l].dz<<endl;
+      if (PrintStuff) cout << temp_track.hits[l].x<<" "<<temp_track.hits[l].y<<" "<<temp_track.hits[l].z<<endl;
     }
     if (PrintStuff) cout << endl;
 
@@ -1033,7 +1034,6 @@ void sPHENIXTracker::findTracksBySegments(vector<SimpleHit3D>& hits, vector<Simp
     for(unsigned int h=firsthitindex;h<temp_track.hits.size();++h)
     {
       kalman->addHit(temp_track.hits[h], state);nfits+=1;
-      if (PrintStuff) cout << " CHI2 : "<<state.chi2<<endl;
       
       if(h >= 4)
       {
@@ -1064,6 +1064,9 @@ void sPHENIXTracker::findTracksBySegments(vector<SimpleHit3D>& hits, vector<Simp
     {
       goodtrack=false;
     }
+
+    if (PrintStuff) cout<<"goodtrack : "<<goodtrack << " CHI2 : "<<state.chi2<<" CHI2norm : "<<state.chi2/(2.*((float)(n_layers)) - 5.)<<" kappa_cut "<<kappa_cut<< endl;
+      
     if(goodtrack==false){continue;}
     
     temp_track.phi = state.phi;
@@ -1084,7 +1087,6 @@ void sPHENIXTracker::findTracksBySegments(vector<SimpleHit3D>& hits, vector<Simp
       }
     }
 
-    if (PrintStuff) cout << "GOOD TRACK!!!" << endl;
   }
 }
 

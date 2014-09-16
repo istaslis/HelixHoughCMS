@@ -209,7 +209,7 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
 	unsigned int min_hits_seed = seedNumber;
 	tracker.setClusterStartBin(2);
 	tracker.setRejectGhosts(false);
-    tracker.setChi2Cut(2000);//20
+    tracker.setChi2Cut(1000000);//20
 	tracker.setChi2RemovalCut(0.5);
 	tracker.setPrintTimings(true);
 	tracker.setVerbosity(1);
@@ -222,7 +222,7 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
 	tracker.setSeparateByHelicity(true);
 	tracker.setMaxHitsPairs(0);
 
-	tracker.setkappaCut(kappa_max);
+	tracker.setkappaCut(1000000);//kappa_max);
 
 	tracker.hitsinzoomlevel.assign(levels, std::vector<int>());
 	tracker.clustersinzoomlevel_phi.assign(levels, 0);
