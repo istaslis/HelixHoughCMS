@@ -87,7 +87,7 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
   std::vector<PHENIXHough::SimpleHit3D> hits;
     std::vector<PHENIXHough::SimpleHit3D> hits_seeded;
 
-    bool OuterFiltering = true;
+    bool OuterFiltering = false;//true;
     bool houghseeding = false;
   
   //float ro1, ro2, phi1, phi2, z1, z2;
@@ -209,7 +209,7 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
 	unsigned int min_hits_seed = seedNumber;
 	tracker.setClusterStartBin(2);
 	tracker.setRejectGhosts(false);
-    tracker.setChi2Cut(1000000);//20
+	tracker.setChi2Cut(2000);//1000000);//20
 	tracker.setChi2RemovalCut(0.5);
 	tracker.setPrintTimings(true);
 	tracker.setVerbosity(1);
@@ -222,7 +222,7 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
 	tracker.setSeparateByHelicity(true);
 	tracker.setMaxHitsPairs(0);
 
-	tracker.setkappaCut(1000000);//kappa_max);
+	tracker.setkappaCut(kappa_max);//1000000);//kappa_max);
 
 	tracker.hitsinzoomlevel.assign(levels, std::vector<int>());
 	tracker.clustersinzoomlevel_phi.assign(levels, 0);
@@ -285,7 +285,7 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
 	tracker_seeded.setNLayers(30);
 	tracker_seeded.setSeedLayer(seedNumber);
 	tracker_seeded.setRejectGhosts(false); //loop from 1st hit in de-ghosting!!!
-    tracker_seeded.setChi2Cut(2000.0);
+    tracker_seeded.setChi2Cut(20.0);
 	tracker_seeded.setPrintTimings(true);
 	tracker_seeded.setVerbosity(1);
 	tracker_seeded.setCutOnDca(false);
@@ -357,7 +357,7 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
         gettimeofday(&t1, NULL);
 
 	if (hits_seeded.size()>0)
-            tracker_seeded.findSeededHelices(tracks_seeds, hits_seeded, min_hits, max_hits, tracks_seeded);
+	    tracker_seeded.findSeededHelices(tracks_seeds, hits_seeded, min_hits, max_hits, tracks_seeded);
         else
             tracks_seeded = tracks_seeds;
 
@@ -397,9 +397,10 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
     
 
 
-    for (unsigned int i=0;i<tracks_seeds.size();i++)
-      if (tracker_seeded.seedWasUsed(i)) filteredtracks.push_back(tracks_seeds[i]);
-
+    /*for (unsigned int i=0;i<tracks_seeds.size();i++)
+      if (tracker_seeded.seedWasUsed(i)) 
+	filteredtracks.push_back(tracks_seeds[i]);
+    */
 
     //        filteredtracks = tracks_seeds;
     
