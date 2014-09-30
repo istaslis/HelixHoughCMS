@@ -85,10 +85,11 @@ void PrintMCTrack(PHENIXHough::SimpleTrack3D track)
 void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &HitsInLayers, std::vector<PHENIXHough::SimpleTrack3D> &seeds, std::vector< ::SimpleTrack3D> &tracks, float xVtx, float yVtx, float zVtx, float zVtxErr, unsigned int nEv)
 {
   std::vector<PHENIXHough::SimpleHit3D> hits;
-    std::vector<PHENIXHough::SimpleHit3D> hits_seeded;
+  std::vector<PHENIXHough::SimpleHit3D> hits_seeded;
 
-    bool OuterFiltering = false;//true;
-    bool houghseeding = false;
+  bool OuterFiltering = false;
+  bool houghseeding = false;
+  bool debug = false;  
   
   //float ro1, ro2, phi1, phi2, z1, z2;
   
@@ -99,20 +100,11 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
   for (unsigned int i=0;i<hitsList.size();i++)
   {
     
-   /* ro1 = hitsList[i].rho().lower(); ro2 = hitsList[i].rho().upper();
-    phi1 = hitsList[i].phi().lower(); phi2 = hitsList[i].phi().upper();
-    z1 = hitsList[i].z().lower(); z2 = hitsList[i].z().upper();
-*/
-    /*assert(ro2>ro1);
-    assert(phi2>phi1);
-    assert(z2>z1);
-    */
-    
-    float dx = fabs(hitsList[i].x().upper()-hitsList[i].x().lower())*3.4;//fabs(ro2*cos(phi2)-ro1*cos(phi1))*2;
-    float dy = fabs(hitsList[i].y().upper()-hitsList[i].y().lower())*3.4;//fabs(ro2*sin(phi2)-ro1*sin(phi1))*2;
+    float dx = fabs(hitsList[i].x().upper()-hitsList[i].x().lower())*3.4;
+    float dy = fabs(hitsList[i].y().upper()-hitsList[i].y().lower())*3.4;
     float dz = fabs(hitsList[i].z().upper()-hitsList[i].z().lower())*3.4;
 
-            if (dz<0.01) dz=0.01;
+    if (dz<0.01) dz=0.01;
    
     float x = hitsList[i].x().center();
     float y = hitsList[i].y().center();
@@ -121,42 +113,22 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
 
     PHENIXHough::SimpleHit3D hit(x-xVtx, dx, y-yVtx, dy, z, dz, i+40000, 0);
     
-    //    hit.layer =GetLayerNumber(hit);
-    //    if (fabs(hit.z)<110 & (hit.layer == 7 || hit.layer == 8)) hit.layer-=4;//to make 7,8 -> 3,4!!!
-        
     //get layer info from original seeding sequence
     if (i==HitsInLayers[ currentlayer])
       currentlayer++;
 
 
-    hit.layer = currentlayer;//+10;
-    //cheat?
-    //        if (currentlayer>13) hit.layer-=9;
+    hit.layer = currentlayer;
 
+    if (hit.layer<3)
+      hits.push_back(hit);
+    else 
+      hits_seeded.push_back(hit);
 
-    //    std::cout << "hit "<<hit.x<<" "<<hit.y<<" "<<hit.z<<" "<<hit.dx<<" "<<hit.dy<<" "<<hit.dz<<" "<<sqrt(hit.dx*hit.dx+hit.dy*hit.dy)<<" layer :"<<hit.layer<<std::endl;
-
-    //            if (sqrt(x*x+y*y)<50) continue;
-
-
-        if (hit.layer<3)
-           hits.push_back(hit);
-	else {//if (hit.layer<5)
-	  //	  	  hit.layer+=10;
-	  hits_seeded.push_back(hit);
-	}
   }
   
-  std::cout <<"hits size "<<hits.size()<<" hits_seeded size"<<hits_seeded.size()<<std::endl;
+  if (debug) std::cout <<"hits size "<<hits.size()<<" hits_seeded size"<<hits_seeded.size()<<std::endl;
 
-  //try to add "0-hit" to match for 
-  
-  //    PHENIXHough::SimpleHit3D hit(0.25, 0.1, 0.4, 0.1, 1000, 10, hitsList.size(), 0);
-  //    hits.push_back(hit);
-
-  
-  
-  
   
   //init tracker
   
@@ -165,13 +137,10 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
 
 	std::vector<float> material;
     material.assign(nlayers, 0.01);
-    //material[2] = 0.01;
-    //material[3] = 0.01;
-    //material[4] = 0.01;
 
     float kappa_max = pT_to_kappa(0.8);//0.4);
 	float rho_max = pow(kappa_max, 1.);
-	std::cout << "kappamax : " << kappa_max << std::endl;
+	if (debug) std::cout << "kappamax : " << kappa_max << std::endl;
 
 	float sv = 0.5;
 	float zxmin =  zVtx-zVtxErr*3-sv;
@@ -180,12 +149,12 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
 
 	//dout<< "Vertex at z :"<<matcher.eventData[ev].zVtx<<endl;
 
-//phi,d,kappa,dzdl,z0
+	//phi,d,kappa,dzdl,z0
 	
 	unsigned int nthreads = 1;
 	unsigned int seedNumber = 3;
 	
-	std::cout << "zxmin :"<<zxmin<<"; zxmax :"<<zxmax<<std::endl;
+	if (debug) std::cout << "zxmin :"<<zxmin<<"; zxmax :"<<zxmax<<std::endl;
 	
 	
 	//HelixRange top_range(0., 2. * M_PI, -4, 4, 0.0, rho_max, -1, 1, -20, 20);
@@ -236,27 +205,30 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
     // setup for tracking based on seeds
     std::vector<std::vector<unsigned int> > zoomprofile_2;
     
-    //    	zoomprofile_2.assign(5, onezoom);
-    //	SetProfile(zoomprofile_2[0], 8, 1, 1, 1, 1);
+    //         zoomprofile_2.assign(5, onezoom);
+    // SetProfile(zoomprofile_2[0], 8, 1, 1, 1, 1);
     //        SetProfile(zoomprofile_2[1], 8, 1, 5, 5, 1);
     //        SetProfile(zoomprofile_2[2], 8, 1, 6, 6, 1);
     //        SetProfile(zoomprofile_2[3], 8, 1, 5, 5, 1);
     //        SetProfile(zoomprofile_2[4], 4, 1, 2, 6, 1);                
-
-    	zoomprofile_2.assign(13, onezoom);
-	SetProfile(zoomprofile_2[0], 8, 1, 1, 1, 1);
-	SetProfile(zoomprofile_2[1], 5, 1, 5, 5, 1);
+       zoomprofile_2.assign(13, onezoom);
+       SetProfile(zoomprofile_2[0], 8, 1, 1, 1, 1);
+       SetProfile(zoomprofile_2[1], 5, 1, 5, 5, 1);
 	SetProfile(zoomprofile_2[2], 1, 1, 1, 3, 1);
-	SetProfile(zoomprofile_2[3], 1, 1, 1, 2, 1);
+    	SetProfile(zoomprofile_2[3], 1, 1, 1, 2, 1);
     	SetProfile(zoomprofile_2[4], 3, 1, 5, 5, 1);
-		SetProfile(zoomprofile_2[5], 1, 1, 1, 3, 1);
-	SetProfile(zoomprofile_2[6], 1, 1, 1, 2, 1);
-	SetProfile(zoomprofile_2[7], 3, 1, 2, 5, 1);
-	SetProfile(zoomprofile_2[8], 1, 1, 1, 3, 1);
-	SetProfile(zoomprofile_2[9], 1, 1, 1, 2, 1);
-	SetProfile(zoomprofile_2[10], 3, 1, 3, 5, 1);
-	SetProfile(zoomprofile_2[11], 3, 1, 3, 5, 1);
-	SetProfile(zoomprofile_2[12], 3, 1, 3, 5, 1);
+    	        SetProfile(zoomprofile_2[5], 1, 1, 1, 3, 1);
+    	SetProfile(zoomprofile_2[6], 1, 1, 1, 2, 1);
+    	SetProfile(zoomprofile_2[7], 3, 1, 2, 5, 1);
+    	SetProfile(zoomprofile_2[8], 1, 1, 1, 3, 1);
+    	SetProfile(zoomprofile_2[9], 1, 1, 1, 2, 1);
+    	SetProfile(zoomprofile_2[10], 3, 1, 3, 5, 1);
+    	SetProfile(zoomprofile_2[11], 3, 1, 3, 5, 1);
+    	SetProfile(zoomprofile_2[12], 3, 1, 3, 5, 1);
+
+
+
+
     	/*zoomprofile_2.assign(7, onezoom);
 	SetProfile(zoomprofile_2[0], 8, 1, 1, 1, 1);
 	SetProfile(zoomprofile_2[1], 5, 1, 5, 30, 1);
@@ -279,13 +251,13 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
 	*/
     HelixRange top_range_2(0., 2. * M_PI, -sv, sv, 0.0, rho_max, -1, 1, zxmin,zxmax);
 	sPHENIXTracker tracker_seeded(zoomprofile_2, 1, top_range_2, material, radii, Bfield);
-	unsigned int max_hits = 50;//30;//400//4
+	unsigned int max_hits = 50;
 	unsigned int min_hits = 2;//4
     tracker_seeded.setClusterStartBin(2);
 	tracker_seeded.setNLayers(30);
 	tracker_seeded.setSeedLayer(seedNumber);
 	tracker_seeded.setRejectGhosts(false); //loop from 1st hit in de-ghosting!!!
-    tracker_seeded.setChi2Cut(20.0);
+	tracker_seeded.setChi2Cut(2000.0);//20
 	tracker_seeded.setPrintTimings(true);
 	tracker_seeded.setVerbosity(1);
 	tracker_seeded.setCutOnDca(false);
@@ -315,7 +287,7 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
         tracker.findHelices(hits, min_hits_seed, max_hits_seed, tracks_seeds);
     else //to move into tracker class!
     {
-        std::cout << "Original seeds :"<<seeds.size()<<std::endl;
+      if (debug) std::cout << "Original seeds :"<<seeds.size()<<std::endl;
         for (unsigned  i=0;i<seeds.size();i++)
         {
 	     //shift on vertex
@@ -328,7 +300,7 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
 
             tracker.findTracksBySegments(seeds[i].hits, tracks_seeds, top_range);//tracks_seeds or ADD to tracks_seeds?
         }
-        std::cout << "Converted seeds :"<<tracks_seeds.size()<<std::endl;
+        if (debug) std::cout << "Converted seeds :"<<tracks_seeds.size()<<std::endl;
 
 
     }
@@ -337,29 +309,24 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
     for (unsigned i=0;i<tracks_seeds.size();i++)
     {
         tracks_seeds[i].index = i;
-        //PrintMCTrack(tracks_seeds[i]);
     }
 
-	gettimeofday(&t2, NULL);
+    gettimeofday(&t2, NULL);
 	
-	time1 = ((double) (t1.tv_sec) + (double) (t1.tv_usec) / 1000000.);
-	time2 = ((double) (t2.tv_sec) + (double) (t2.tv_usec) / 1000000.);
-	std::cout << "nEv = "<<nEv<< " seed tracking time = " << (time2 - time1) << std::endl << std::endl;
-	
-    std::cout << "Tracks! :"<<tracks_seeds.size()<<std::endl<<std::endl;
+    time1 = ((double) (t1.tv_sec) + (double) (t1.tv_usec) / 1000000.);
+    time2 = ((double) (t2.tv_sec) + (double) (t2.tv_usec) / 1000000.);
+    if (debug) std::cout << "nEv = "<<nEv<< " seed tracking time = " << (time2 - time1) << std::endl << std::endl;
     
-    
-    //tracks_seeds.clear();
-    
+    if (debug) std::cout << "Tracks! :"<<tracks_seeds.size()<<std::endl<<std::endl;
+
+    if (hits_seeded.size()==0) OuterFiltering = false;
+        
     if (OuterFiltering) {
         tracker_seeded.setSeedStates(tracker.getKalmanStates());
 
         gettimeofday(&t1, NULL);
 
-	if (hits_seeded.size()>0)
-	    tracker_seeded.findSeededHelices(tracks_seeds, hits_seeded, min_hits, max_hits, tracks_seeded);
-        else
-            tracks_seeded = tracks_seeds;
+	tracker_seeded.findSeededHelices(tracks_seeds, hits_seeded, min_hits, max_hits, tracks_seeded);
 
         gettimeofday(&t2, NULL);
         time1 = ((double) (t1.tv_sec) + (double) (t1.tv_usec) / 1000000.);
@@ -370,49 +337,41 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
         std::cout << "nEv = "<<nEv<<" ; "<< tracks_seeded.size() << " stage 1 tracks found" << std::endl << std::endl;
 
 
-
-        //filter out seeded tracks with same seeds
-        std::cout << "Filtering tracks..."<<std::endl;
-
-        for (unsigned int i=0;i<tracks_seeded.size(); i++)
-        {
-            for (unsigned int j=0;j<tracks_seeds.size(); j++)
-                if ((tracks_seeded[i].hits[0].index == tracks_seeds[j].hits[0].index) &&
-                        (tracks_seeded[i].hits[1].index == tracks_seeds[j].hits[1].index) &&
-                        (tracks_seeded[i].hits[2].index == tracks_seeds[j].hits[2].index))
-                {
-                    filteredtracks.push_back(tracks_seeds[j]);
-                    tracks_seeds.erase(tracks_seeds.begin()+j);
-                    break;
-                }
-        }
-
-
-        std::cout << "Filtered tracks :"<<filteredtracks.size()<<std::endl;
-
     }
-    else
-        filteredtracks = tracks_seeds;
-
-    
 
 
-    /*for (unsigned int i=0;i<tracks_seeds.size();i++)
-      if (tracker_seeded.seedWasUsed(i)) 
+    filteredtracks.clear();
+    std::vector<float> filteredtracks_chi2; //chi2 of the seed refitting
+    std::vector<float> filteredtracks_matched_chi2; //chi2 of the final track (with matching)
+    std::vector<float> filteredtracks_nhit; //chi2 of the final track (with matching)
+
+    if (debug) std::cout << "Lengths : tracks_seeds.size "<<tracks_seeds.size()<<" (tracker.getKalmanStates()).size "<<(tracker.getKalmanStates()).size()<<std::endl;
+
+    for (unsigned int i=0;i<tracks_seeds.size();i++)
+      if (OuterFiltering)
+	{
+	  if (tracker_seeded.seedWasUsed(i)) {
 	filteredtracks.push_back(tracks_seeds[i]);
-    */
+	filteredtracks_chi2.push_back( (tracker.getKalmanStates())[i].chi2);
+   	filteredtracks_matched_chi2.push_back(tracker_seeded.getSeedMatchedChi2(i));
+	filteredtracks_nhit.push_back(tracker_seeded.getSeedTrackNhit(i));
+	  }   
+	}
+      else
+	{
+	  filteredtracks.push_back(tracks_seeds[i]);
+	  filteredtracks_chi2.push_back( (tracker.getKalmanStates())[i].chi2);
+	  filteredtracks_matched_chi2.push_back(-1);
+	  filteredtracks_nhit.push_back(-1);
+	} 
 
-    //        filteredtracks = tracks_seeds;
-    
-    float kappa, dzdl, d, phi, z0, chi2, nhit;
+
+    if (debug) {
+
+    float kappa, dzdl, d, phi, z0, seedchi2, matchedchi2, nhit;
     float x,y,z,dx,dy,dz, layer;
 
 
-
-    
-    std::cout <<"AGAIN! hits size "<<hits.size()<<" hits_seeded size"<<hits_seeded.size()<<std::endl;
-    
-    
     TFile *file = new TFile("seedoutput.root","recreate");
     TTree* seedtree = new TTree("seedtree", "a tree of seeds");
     seedtree->Branch("kappa", &kappa,"kappa/F");
@@ -420,7 +379,8 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
     seedtree->Branch("d", &d, "d/F");
     seedtree->Branch("phi", &phi, "phi/F");
     seedtree->Branch("z0", &z0, "z0/F");
-    seedtree->Branch("chi2",&chi2, "chi2/F");
+    seedtree->Branch("seedchi2",&seedchi2, "seedchi2/F");
+    seedtree->Branch("matchedchi2",&matchedchi2, "matchedchi2/F");
     seedtree->Branch("nhit",&nhit, "nhit/F");
 
     TTree* hittree = new TTree("hitree", "a tree of hits");
@@ -433,49 +393,29 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
     hittree->Branch("layer",&layer,"layer/F");
     
 
-    /*
-    for (unsigned int i=0;i<tracks_seeds.size();i++)
+    for (unsigned int i=0;i<filteredtracks.size();i++)
     {
-        kappa = tracks_seeds[i].kappa;
-        dzdl = tracks_seeds[i].dzdl;
-        d =  tracks_seeds[i].d;
-        phi= tracks_seeds[i].phi;
-        z0 =  tracks_seeds[i].z0;
-        chi2 = (tracker.getKalmanStates())[i].chi2 / (2. * seedNumber - 5.);
-        
-        seedtree->Fill();
-        
-    }
-    */
-
-    std::cout << "Check the sizes: kalstatessize "<<tracker_seeded.getKalmanStates().size()<<" seeds "<<tracks_seeds.size()<<" tracks "<<tracks_seeded.size()<<std::endl;
-        for (unsigned int i=0;i<tracks_seeded.size();i++)
-    {
-        kappa = tracks_seeded[i].kappa;
-        dzdl = tracks_seeded[i].dzdl;
-        d =  tracks_seeded[i].d;
-        phi= tracks_seeded[i].phi;
-        z0 =  tracks_seeded[i].z0;
-	if (tracker_seeded.getKalmanStates().size()==tracks_seeded.size())
-	  chi2 = (tracker_seeded.getKalmanStates())[i].chi2;// / (2. * tracks_seeded[i].hits.size() - 5.);
-	else
-	  chi2 = -1;
-
-        nhit = tracks_seeded[i].hits.size();
-
+        kappa = filteredtracks[i].kappa;
+        dzdl = filteredtracks[i].dzdl;
+        d =  filteredtracks[i].d;
+        phi= filteredtracks[i].phi;
+        z0 =  filteredtracks[i].z0;
+	seedchi2 = filteredtracks_chi2[i];
+	matchedchi2 = filteredtracks_matched_chi2[i];
+        nhit = filteredtracks_nhit[i];
         seedtree->Fill();
         
     }
         for (unsigned int i=0;i<hits_seeded.size();i++)
     {
 
-         dx = hits_seeded[i].dx;//fabs(hitsList[i].x().upper()-hitsList[i].x().lower());//fabs(ro2*cos(phi2)-ro1*cos(phi1))*2;
-         dy = hits_seeded[i].dy;//fabs(hitsList[i].y().upper()-hitsList[i].y().lower());//fabs(ro2*sin(phi2)-ro1*sin(phi1))*2;
-         dz = hits_seeded[i].dz;//fabs(hitsList[i].z().upper()-hitsList[i].z().lower());
+         dx = hits_seeded[i].dx;
+         dy = hits_seeded[i].dy;
+         dz = hits_seeded[i].dz;
 
-         x = hits_seeded[i].x;//hitsList[i].x().center();
-         y = hits_seeded[i].y;//hitsList[i].y().center();
-         z = hits_seeded[i].z;//hitsList[i].z().center();
+         x = hits_seeded[i].x;
+         y = hits_seeded[i].y;
+         z = hits_seeded[i].z;
 
 	 layer = (float)hits_seeded[i].layer;
 
@@ -485,42 +425,24 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
     }
 
     
-
-	/*    for (unsigned int i=0;i<tracks_seeded.size();i++)
-      for (unsigned int j=0;j<tracks_seeded[i].hits.size();j++)
-      {
-	x=tracks_seeded[i].hits[j].x;
-	y=tracks_seeded[i].hits[j].y;
-	z=tracks_seeded[i].hits[j].z;
-	dx=tracks_seeded[i].hits[j].dx;
-	dy=tracks_seeded[i].hits[j].dy;
-	dz=tracks_seeded[i].hits[j].dz;
-	layer=tracks_seeded[i].hits[j].layer;
-
-	hittree->Fill();
-
-      }
-
-	*/
-	
     seedtree->Write();
     hittree->Write();
     file->Close();
     
-    
+    }
     
     
     hits.clear();
     hits_seeded.clear();
 
     
-    std::cout<<"Convert tracks"<<std::endl;
+    if (debug) std::cout<<"Convert tracks"<<std::endl;
     
     //tracks_seeds    ->   tracks
     
     ConvertTracks(filteredtracks, hitsList, tracks);
 
-    std::cout<<"Converted! "<<tracks.size()<<" tracks"<<std::endl;
+    if (debug) std::cout<<"Converted! "<<tracks.size()<<" tracks"<<std::endl;
 }
 
 

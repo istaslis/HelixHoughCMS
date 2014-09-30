@@ -1435,8 +1435,7 @@ SimpleHit3D neededhit = IsDummy(layer_sorted[l-1][(*cur_seg)[j].hits[l-1]]) ? la
     temp_track.z0 = state.z0;
     temp_track.dzdl = state.dzdl;
 
-    //    if (debug) cout <<state.chi2;
-    if(goodtrack==false){continue;}// if (debug) cout << "+";
+    if(goodtrack==false){continue;}
     if((remove_hits == true) && (state.chi2 < chi2_removal_cut))
     {
       for(unsigned int l=first_new_layer;l<n_layers;++l)
@@ -1455,6 +1454,8 @@ SimpleHit3D neededhit = IsDummy(layer_sorted[l-1][(*cur_seg)[j].hits[l-1]]) ? la
     //    tracks.push_back(temp_track);
     //track_states.push_back(state);
     seed_used[seeds[(*cur_seg)[i].seed].index] = true;
+    seed_matched_chi2[seeds[(*cur_seg)[i].seed].index] = state.chi2;
+    seed_tracknhit[seeds[(*cur_seg)[i].seed].index] = n_layers;
   }
   
   gettimeofday(&t2, NULL);

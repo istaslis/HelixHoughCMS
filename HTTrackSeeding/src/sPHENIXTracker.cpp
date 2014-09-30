@@ -557,7 +557,7 @@ void sPHENIXTracker::findSeededTracks(vector<SimpleTrack3D>& seeds, vector<Simpl
       for (map<int, vector<SimpleHit3D> >::iterator it = nametoindex.begin(); it!=nametoindex.end();it++)
         firsthits.push_back(it->second[0]);
 
-      n_layers = seed_layer+firsthits.size();
+      n_layers = seed_layer+2;//firsthits.size();
 
       if (debug) cout << "Old n_layers = "<<oldn_layers<<" New n_layers = "<<n_layers<<endl;
 
@@ -568,7 +568,7 @@ void sPHENIXTracker::findSeededTracks(vector<SimpleTrack3D>& seeds, vector<Simpl
       if (firsthits.size()<2) return;
 
       if (debug) cout << "Sorted:"<<endl;
-      for (unsigned int i=0;i<firsthits.size();i++)//i<2;i++)
+      for (unsigned int i=0;i<2;i++)//firsthits.size();i++)//i<2;i++)
     {
 
       int key = firsthits[i].layer;

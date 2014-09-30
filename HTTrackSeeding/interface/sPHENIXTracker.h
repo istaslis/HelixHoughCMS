@@ -233,8 +233,10 @@ public:
   void initSeeding(std::vector<SimpleTrack3D>& seeds)
   {
     seeding=true;
-    seed_used.clear();
+    seed_used.clear(); seed_matched_chi2.clear(); seed_tracknhit.clear();
     seed_used.assign(seeds.size(), false);
+    seed_matched_chi2.assign(seeds.size(), -1);
+    seed_tracknhit.assign(seeds.size(), -1);
     AngleIndexList templist;
     angle_list.clear();
     angle_list.assign(n_layers, templist);
@@ -291,6 +293,8 @@ public:
   void quadrupletRejection(std::vector<SimpleTrack3D>& input, std::vector<SimpleTrack3D>& output, std::vector<bool>& usetrack, std::vector<float>& next_best_chi2);
 
   bool seedWasUsed(unsigned int seed_index){return seed_used.at(seed_index);}
+  float getSeedMatchedChi2(unsigned int seed_index){return seed_matched_chi2.at(seed_index);}
+  int getSeedTrackNhit(unsigned int seed_index){return seed_tracknhit.at(seed_index);}
   
   
   
@@ -472,7 +476,9 @@ private:
   int seed_layer;
   
   std::vector<bool> seed_used;
-  
+  std::vector<float> seed_matched_chi2;  
+  std::vector<int> seed_tracknhit;
+
   unsigned int nthreads;
 //   std::vector<SeamStress::Seamstress*> *vssp;
 //   std::vector<SeamStress::Seamstress> vss;
