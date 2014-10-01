@@ -41,6 +41,18 @@ class HTTripletGenerator : public HitTripletGenerator {
     std::string			  vertexSrc;
     std::string           seedSrc;
     bool                  seedfromHits;
+    unsigned int          zoomLevelsNumber;
+    std::vector<std::vector<unsigned int> > zoomlevels;
+    double phimin;
+    double phimax;
+    double SV;
+    double dzdlmin;
+    double dzdlmax;
+    double pTmin;
+    double debugOutput;
+    double HoughTransformSeeding;
+    double SeedRefitterOnly;
+
 };
 
 

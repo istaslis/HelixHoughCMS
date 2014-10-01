@@ -88,8 +88,29 @@ HTTripletGenerator::HTTripletGenerator( const edm::ParameterSet & cfg )
     << "theRequiredLayers=" << theRequiredLayers;
   theLayerBuilderName = cfg.getParameter<std::string>("SeedingLayers");
   vertexSrc = cfg.getParameter<std::string>("VertexSrc");
-   seedSrc = cfg.getParameter<std::string>("SeedSrc");
-   seedfromHits = cfg.getParameter<bool>("SeedsFromHits");
+  seedSrc = cfg.getParameter<std::string>("SeedSrc");
+  seedfromHits = cfg.getParameter<bool>("SeedsFromHits");
+  
+  std::vector<edm::ParameterSet> zoomlevelspsets = cfg.getParameter<std::vector<edm::ParameterSet> >("ZoomLevels");
+  for (unsigned int i=0; i<zoomlevelspsets.size(); i++)
+  {
+    std::vector<unsigned int> zl = zoomlevelspsets[i].getParameter<std::vector<unsigned int> >("levels");
+    if (zl.size()!=5)
+      throw cms::Exception("HTTripletGenerator") << "Zoom level must contain 5 integer values";
+    zoomlevels.push_back(zl);
+  }
+
+  edm::ParameterSet HTRegion = cfg.getParameter<edm::ParameterSet>("HoughTransformRegion");
+  phimin = HTRegion.getParameter<double>("phimin");
+  phimax = HTRegion.getParameter<double>("phimax");
+  SV     = HTRegion.getParameter<double>("SV");
+  dzdlmin= HTRegion.getParameter<double>("dzdlmin");
+  dzdlmax= HTRegion.getParameter<double>("dzdlmax");
+  pTmin  = HTRegion.getParameter<double>("pTmin");
+  debugOutput = cfg.getParameter<bool> ("DebugOutput");
+  HoughTransformSeeding = cfg.getParameter<bool> ("HoughTransformSeeding");
+  SeedRefitterOnly = cfg.getParameter<bool> ("SeedRefitterOnly");
+
 }
 
 
@@ -376,7 +397,8 @@ void  HTTripletGenerator::hitTriplets ( const TrackingRegion & reg, OrderedHitTr
       
     finder.SetVertex(xVtx,xVtxErr,yVtx,yVtxErr,zVtx,zVtxErr);
     finder.SetSeeds(seedTracks, seedhits);
-    finder.findHelices( hits, hitsInLayers, min_hits, max_hits, prs );
+    finder.findHelices( hits, hitsInLayers, min_hits, max_hits, prs, zoomlevels, phimin, phimax, SV, dzdlmin, dzdlmax, pTmin, debugOutput,HoughTransformSeeding, SeedRefitterOnly);
+
   }
   std::cout << "Triplet generator ending with " << prs.size() << " triplets" << std::endl;
 }

@@ -82,14 +82,29 @@ void PrintMCTrack(PHENIXHough::SimpleTrack3D track)
     std::cout << " Track hits: "<<track.hits.size()<<" phi="<<track.phi<<" d="<<track.d<<" kappa="<<track.kappa<<" dzdl="<<track.dzdl<<" z0="<<track.z0<<" index="<<track.index<<std::endl;
 }
 
-void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &HitsInLayers, std::vector<PHENIXHough::SimpleTrack3D> &seeds, std::vector< ::SimpleTrack3D> &tracks, float xVtx, float yVtx, float zVtx, float zVtxErr, unsigned int nEv)
+void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, 
+	      std::vector<unsigned int> &HitsInLayers, 
+	      std::vector<PHENIXHough::SimpleTrack3D> &seeds, 
+	      std::vector< ::SimpleTrack3D> &tracks, 
+	      float xVtx, float yVtx, float zVtx, float zVtxErr, 
+	      unsigned int nEv, 
+	      std::vector<std::vector<unsigned int> > &zoomprofile_2,
+	      double phimin,
+	      double phimax,
+	      double SV,
+	      double dzdlmin,
+	      double dzdlmax,
+	      double pTmin,
+	      double debugOutput,
+	      double HoughTransformSeeding,
+	      double SeedRefitterOnly)
 {
   std::vector<PHENIXHough::SimpleHit3D> hits;
   std::vector<PHENIXHough::SimpleHit3D> hits_seeded;
 
-  bool OuterFiltering = false;
-  bool houghseeding = false;
-  bool debug = false;  
+  bool OuterFiltering = !SeedRefitterOnly;
+  bool houghseeding = HoughTransformSeeding;
+  bool debug = debugOutput;  
   
   //float ro1, ro2, phi1, phi2, z1, z2;
   
@@ -138,13 +153,12 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
 	std::vector<float> material;
     material.assign(nlayers, 0.01);
 
-    float kappa_max = pT_to_kappa(0.8);//0.4);
+    float kappa_max = pT_to_kappa(pTmin);
 	float rho_max = pow(kappa_max, 1.);
 	if (debug) std::cout << "kappamax : " << kappa_max << std::endl;
 
-	float sv = 0.5;
-	float zxmin =  zVtx-zVtxErr*3-sv;
-	float zxmax = zVtx+zVtxErr*3+sv;
+	float zxmin =  zVtx-zVtxErr*3-SV;
+	float zxmax = zVtx+zVtxErr*3+SV;
 
 
 	//dout<< "Vertex at z :"<<matcher.eventData[ev].zVtx<<endl;
@@ -158,10 +172,12 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
 	
 	
 	//HelixRange top_range(0., 2. * M_PI, -4, 4, 0.0, rho_max, -1, 1, -20, 20);
-	HelixRange top_range(0., 2. * M_PI, -sv, sv, 0.0, rho_max, -1, 1, zxmin,zxmax);//matcher.eventData[ev].zVtx - sv, matcher.eventData[ev].zVtx + sv);
+	//HelixRange top_range(0., 2. * M_PI, -sv, sv, 0.0, rho_max, -1, 1, zxmin,zxmax);
+	HelixRange top_range(phimin, phimax, -SV, SV, 0.0, rho_max, dzdlmin, dzdlmax, zxmin,zxmax);
 
 	std::vector<unsigned int> onezoom(5, 0);
 	std::vector<std::vector<unsigned int> > zoomprofile;
+
 	int levels = 5;
 	zoomprofile.assign(levels, onezoom);
 
@@ -203,7 +219,7 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
 
 	// *********************************************************
     // setup for tracking based on seeds
-    std::vector<std::vector<unsigned int> > zoomprofile_2;
+	//    std::vector<std::vector<unsigned int> > zoomprofile_2;
     
     //         zoomprofile_2.assign(5, onezoom);
     // SetProfile(zoomprofile_2[0], 8, 1, 1, 1, 1);
@@ -211,7 +227,7 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
     //        SetProfile(zoomprofile_2[2], 8, 1, 6, 6, 1);
     //        SetProfile(zoomprofile_2[3], 8, 1, 5, 5, 1);
     //        SetProfile(zoomprofile_2[4], 4, 1, 2, 6, 1);                
-       zoomprofile_2.assign(13, onezoom);
+    /*       zoomprofile_2.assign(13, onezoom);
        SetProfile(zoomprofile_2[0], 8, 1, 1, 1, 1);
        SetProfile(zoomprofile_2[1], 5, 1, 5, 5, 1);
 	SetProfile(zoomprofile_2[2], 1, 1, 1, 3, 1);
@@ -225,31 +241,10 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
     	SetProfile(zoomprofile_2[10], 3, 1, 3, 5, 1);
     	SetProfile(zoomprofile_2[11], 3, 1, 3, 5, 1);
     	SetProfile(zoomprofile_2[12], 3, 1, 3, 5, 1);
+    */
 
-
-
-
-    	/*zoomprofile_2.assign(7, onezoom);
-	SetProfile(zoomprofile_2[0], 8, 1, 1, 1, 1);
-	SetProfile(zoomprofile_2[1], 5, 1, 5, 30, 1);
-	SetProfile(zoomprofile_2[2], 3, 1, 5, 30, 1);
-	SetProfile(zoomprofile_2[3], 3, 1, 2, 30, 1);
-	SetProfile(zoomprofile_2[4], 3, 1, 3, 5, 1);
-	SetProfile(zoomprofile_2[5], 3, 1, 3, 5, 1);
-	SetProfile(zoomprofile_2[6], 3, 1, 3, 5, 1);
-	*/
-	/*	SetProfile(zoomprofile_2[0], 8, 1, 1, 1, 1);
-	SetProfile(zoomprofile_2[1], 5, 7, 7, 10, 1);
-    	SetProfile(zoomprofile_2[2], 6, 7, 7, 10, 1);
-	SetProfile(zoomprofile_2[3], 7, 8, 7, 10, 1);
-	SetProfile(zoomprofile_2[4], 7, 7, 7, 10, 1);
-	SetProfile(zoomprofile_2[5], 8, 8, 8, 10, 1);
-	SetProfile(zoomprofile_2[6], 8, 8, 8, 10, 1);
-	SetProfile(zoomprofile_2[7], 5, 1, 3, 10, 1);
-        SetProfile(zoomprofile_2[8], 5, 1, 3, 10, 1);
-	SetProfile(zoomprofile_2[9], 5, 1, 3, 10, 1);
-	*/
-    HelixRange top_range_2(0., 2. * M_PI, -sv, sv, 0.0, rho_max, -1, 1, zxmin,zxmax);
+	//HelixRange top_range_2(0., 2. * M_PI, -sv, sv, 0.0, rho_max, -1, 1, zxmin,zxmax);
+	HelixRange top_range_2(phimin, phimax, -SV, SV, 0.0, rho_max, dzdlmin, dzdlmax, zxmin,zxmax);
 	sPHENIXTracker tracker_seeded(zoomprofile_2, 1, top_range_2, material, radii, Bfield);
 	unsigned int max_hits = 50;
 	unsigned int min_hits = 2;//4
@@ -478,10 +473,20 @@ void DoTheJob(std::vector< ::SimpleHit3D> &hitsList, std::vector<unsigned int> &
 
 void  ::HelixHough::findHelices ( const TrackingRegion::Hits & hits      ,
 				  std::vector<unsigned int> &HitsInLayers	,
-                                unsigned int                 min_hits  ,
-                                unsigned int                 max_hits  ,
-                                OrderedHitTriplets         & tracks    ,
-                                unsigned int                 maxtracks )
+				  unsigned int                 min_hits  ,
+				  unsigned int                 max_hits  ,
+				  OrderedHitTriplets         & tracks    ,
+				  std::vector<std::vector<unsigned int> > &zoomlevels  ,
+				  double phimin,
+				  double phimax,
+				  double SV,
+				  double dzdlmin,
+				  double dzdlmax,
+				  double pTmin,
+				  double debugOutput,
+				  double HoughTransformSeeding,
+				  double SeedRefitterOnly,
+				  unsigned int                 maxtracks )
 {
 
   voteTime  ().reset();
@@ -513,7 +518,7 @@ void  ::HelixHough::findHelices ( const TrackingRegion::Hits & hits      ,
 //   engine.findHelices(hitsList,min_hits,max_hits,temp_tracks,maxtracks);
 //   
   
-   DoTheJob(hitsList, HitsInLayers, seeds, temp_tracks, xVtx, yVtx, zVtx, zVtxErr, nEv);
+   DoTheJob(hitsList, HitsInLayers, seeds, temp_tracks, xVtx, yVtx, zVtx, zVtxErr, nEv, zoomlevels, phimin, phimax, SV, dzdlmin, dzdlmax, pTmin, debugOutput,HoughTransformSeeding, SeedRefitterOnly);
   
   for (unsigned int i=0;i<temp_tracks.size();i++)
   {

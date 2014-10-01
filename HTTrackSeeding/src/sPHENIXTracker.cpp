@@ -477,11 +477,11 @@ void sPHENIXTracker::finalize(vector<SimpleTrack3D>& input, vector<SimpleTrack3D
     cout<<"sorttime = "<<sorttime<<endl;
     cout<<endl<<"curseg# "<<candidates.size()<<endl;
 
-    ofstream f ("cur_seg.txt");
-    f<<"dzdl,cur_seg,tracks"<<endl;
-    for (unsigned int i=0;i<candidates.size();i++)
-      f<<dzdl[i]<<","<<candidates[i]<<","<<trackcandidates[i]<<endl;
-    f.close();
+    //ofstream f ("cur_seg.txt");
+    //f<<"dzdl,cur_seg,tracks"<<endl;
+    //for (unsigned int i=0;i<candidates.size();i++)
+    //  f<<dzdl[i]<<","<<candidates[i]<<","<<trackcandidates[i]<<endl;
+    //f.close();
 
 
     int usedseedsnum = 0;
